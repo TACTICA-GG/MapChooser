@@ -49,7 +49,17 @@
             "SetNextMap": "setnextmap",
             "Extend": "ext,extendmap",
             "MapsVote": "mapsvote",
-            "MapList": "maplist,maps"
+            "MapList": "maplist,maps",
+            "AddMap": "addmap",
+            "RemoveMap": "removemap",
+            "CycleMenu": "cyclemenu,mapcycle"
+        },
+        "Cycle": {
+            "Enabled": true,
+            "RandomOrder": false,
+            "AddMapPermission": "admin.changemap",
+            "RemoveMapPermission": "admin.changemap",
+            "CycleMenuPermission": "admin.changemap"
         },
         "AllowSpectatorsToVote": false,
         "SetNextMapPermission": "admin.changemap",

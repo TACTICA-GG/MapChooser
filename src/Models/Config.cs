@@ -46,6 +46,15 @@ public class ExtendMapConfig
     public int VotePercentage { get; set; } = 60;
 }
 
+public class CycleConfig
+{
+    public bool Enabled { get; set; } = true;
+    public bool RandomOrder { get; set; } = false;
+    public string AddMapPermission { get; set; } = "admin.changemap";
+    public string RemoveMapPermission { get; set; } = "admin.changemap";
+    public string CycleMenuPermission { get; set; } = "admin.changemap";
+}
+
 public class CommandsConfig
 {
     public string Rtv { get; set; } = "rtv";
@@ -60,6 +69,9 @@ public class CommandsConfig
     public string MapsVote { get; set; } = "mapsvote";
     public string ChangeMap { get; set; } = "map,setmap";
     public string MapList { get; set; } = "maplist,maps";
+    public string AddMap { get; set; } = "addmap";
+    public string RemoveMap { get; set; } = "removemap";
+    public string CycleMenu { get; set; } = "cyclemenu,mapcycle";
 }
 
 public class MapChooserConfig
@@ -68,6 +80,7 @@ public class MapChooserConfig
     public VotemapConfig Votemap { get; set; } = new();
     public EndOfMapConfig EndOfMap { get; set; } = new();
     public ExtendMapConfig ExtendMap { get; set; } = new();
+    public CycleConfig Cycle { get; set; } = new();
     public int MapsInCooldown { get; set; } = 3;
     public CommandsConfig Commands { get; set; } = new();
     public bool AllowSpectatorsToVote { get; set; } = false;
