@@ -31,6 +31,9 @@ MapChooser is a map voting plugin for SwiftlyS2. It handles Rock The Vote (RTV),
 | `!setnextmap [map]` | Sets the next map directly or opens a selection menu (Admin only). |
 | `!mapsvote` | Opens a menu to select multiple maps and start a custom vote (Admin only). |
 | `!map` / `!setmap` | Loads requested map (Admin only). |
+| `!addmap <name> [id]` | Adds a map to the cycle and saves it to `maps.jsonc` (Admin only). |
+| `!removemap <name>` | Removes a map from the cycle and saves the change to `maps.jsonc` (Admin only). |
+| `!cyclemenu` / `!mapcycle` | Opens the cycle management menu — view order, move maps up/down, remove (Admin only). |
 
 ## Configuration (`config.jsonc`)
 
@@ -156,6 +159,10 @@ Each map entry supports the following properties:
 ```
 
 In this example, when there are 1–3 real players on the server, only `Mirage` and `Overpass` will appear in votes and nominations. Once there are 4+ players, only `Dust II` and `Inferno Night` will be available.
+
+## Map Cycle
+
+When a match ends and no end-of-map vote fires, the plugin automatically advances to the next map in the cycle. The cycle order follows `maps.jsonc`. Use `!cyclemenu` to view the order, move maps up/down, or remove them in-game. Use `!addmap` / `!removemap` to manage the list from chat — changes persist to disk immediately.
 
 ## Features
 
