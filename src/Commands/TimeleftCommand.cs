@@ -35,9 +35,11 @@ public class TimeleftCommand
 
         var timelimitConVar = _core.ConVar.Find<float>("mp_timelimit");
         var maxroundsConVar = _core.ConVar.Find<int>("mp_maxrounds");
-        
+        var winlimitConVar = _core.ConVar.Find<int>("mp_winlimit");
+
         float timelimit = timelimitConVar?.Value ?? 0;
         int maxrounds = maxroundsConVar?.Value ?? 0;
+        int winlimit = winlimitConVar?.Value ?? 0;
 
         string text;
 
@@ -71,6 +73,15 @@ public class TimeleftCommand
         {
             int totalRoundsPlayed = _core.Game.MatchData.TerroristScoreTotal + _core.Game.MatchData.CTScoreTotal;
             int roundsRemaining = maxrounds - totalRoundsPlayed;
+
+            if (winlimit == 0)
+            {
+                // CS2 ends when a team wins (maxrounds/2)+1 rounds even without explicit mp_winlimit
+                int effectiveWinlimit = maxrounds / 2 + 1;
+                int maxTeamScore = Math.Max(_core.Game.MatchData.TerroristScoreTotal, _core.Game.MatchData.CTScoreTotal);
+                roundsRemaining = Math.Min(roundsRemaining, effectiveWinlimit - maxTeamScore);
+            }
+
             if (roundsRemaining > 1)
             {
                 text = localizer["map_chooser.timeleft.remaining_rounds", roundsRemaining];

@@ -14,7 +14,7 @@ using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace MapChooser;
 
-[PluginMetadata(Id = "MapChooser", Version = "1.2.0", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
+[PluginMetadata(Id = "MapChooser", Version = "1.2.1", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
 public sealed class MapChooser : BasePlugin
 {
     private MapChooserConfig _config = new();
@@ -337,6 +337,24 @@ public sealed class MapChooser : BasePlugin
             }
 
             if (winlimit - maxTeamScore <= _config.EndOfMap.TriggerRoundsBeforeEnd)
+            {
+                trigger = true;
+            }
+        }
+
+        // When mp_winlimit is not set, CS2 still ends the match when a team wins (maxrounds/2)+1 rounds
+        if (!trigger && winlimit == 0 && maxrounds > 0)
+        {
+            int effectiveWinlimit = maxrounds / 2 + 1;
+            var teams = Core.EntitySystem.GetAllEntitiesByClass<CCSTeam>();
+            int maxTeamScore = 0;
+            foreach (var team in teams)
+            {
+                int score = team.ScoreFirstHalf + team.ScoreSecondHalf + team.ScoreOvertime;
+                if (score > maxTeamScore) maxTeamScore = score;
+            }
+
+            if (effectiveWinlimit - maxTeamScore <= _config.EndOfMap.TriggerRoundsBeforeEnd)
             {
                 trigger = true;
             }
