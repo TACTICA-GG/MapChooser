@@ -48,7 +48,7 @@ public class ExtendMapConfig
 
 public class CycleConfig
 {
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = false;
     public bool RandomOrder { get; set; } = false;
     public string AddMapPermission { get; set; } = "admin.changemap";
     public string RemoveMapPermission { get; set; } = "admin.changemap";
