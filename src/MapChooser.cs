@@ -1,3 +1,4 @@
+using System.Threading;
 using MapChooser.Commands;
 using MapChooser.Dependencies;
 using MapChooser.Helpers;
@@ -15,7 +16,7 @@ using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace MapChooser;
 
-[PluginMetadata(Id = "MapChooser", Version = "1.2.2", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
+[PluginMetadata(Id = "MapChooser", Version = "1.2.3", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
 public sealed class MapChooser : BasePlugin
 {
     private MapChooserConfig _config = new();
@@ -45,6 +46,8 @@ public sealed class MapChooser : BasePlugin
     private MapListCommand _mapListCmd = null!;
     private AddMapCommand _addMapCmd = null!;
     private RemoveMapCommand _removeMapCmd = null!;
+
+    private CancellationTokenSource? _checkVoteTimer;
 
     public MapChooser(ISwiftlyCore core) : base(core)
     {
@@ -132,10 +135,11 @@ public sealed class MapChooser : BasePlugin
         Core.GameEvent.HookPost<EventRoundAnnounceMatchPoint>(OnMatchPoint);
         Core.Event.OnMapLoad += OnMapLoad;
 
-        Core.Scheduler.DelayAndRepeat(1000, 1000, () =>
+        _checkVoteTimer = Core.Scheduler.DelayAndRepeat(1000, 1000, () =>
         {
             CheckAutomatedVote();
         });
+        Core.Scheduler.StopOnMapChange(_checkVoteTimer);
     }
 
     private void OnMapLoad(IOnMapLoadEvent @event)
@@ -171,6 +175,12 @@ public sealed class MapChooser : BasePlugin
 
         _mapCooldown.OnMapStart(@event.MapName, Core.Engine.WorkshopId);
         _cycleManager.OnMapStart(@event.MapName, Core.Engine.WorkshopId ?? "");
+
+        _checkVoteTimer = Core.Scheduler.DelayAndRepeat(1000, 1000, () =>
+        {
+            CheckAutomatedVote();
+        });
+        Core.Scheduler.StopOnMapChange(_checkVoteTimer);
     }
 
     private HookResult OnRoundStart(EventRoundStart @event)
