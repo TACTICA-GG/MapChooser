@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 using MapChooser.Commands;
 using MapChooser.Dependencies;
 using MapChooser.Helpers;
@@ -16,7 +16,7 @@ using SwiftlyS2.Shared.SchemaDefinitions;
 
 namespace MapChooser;
 
-[PluginMetadata(Id = "MapChooser", Version = "1.2.3", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
+[PluginMetadata(Id = "MapChooser", Version = "1.2.4", Name = "Map Chooser", Author = "aga", Description = "Map chooser plugin for SwiftlyS2")]
 public sealed class MapChooser : BasePlugin
 {
     private MapChooserConfig _config = new();
@@ -151,10 +151,10 @@ public sealed class MapChooser : BasePlugin
         _state.EofVoteHappening = false;
         _state.NextMap = null;
         _state.RoundsPlayed = 0;
-       var gameRules = Core.EntitySystem.GetGameRules();
-        bool engineReady = gameRules?.IsValid == true && Core.Engine != null;
 
-        _state.MapStartTime = engineReady ? Core.Engine!.GlobalVars.CurrentTime : 0;
+        // MapStartTime is set to 0 here; it will be updated properly in OnWarmupEnd or OnMatchStart
+        // when the engine is fully initialized (avoiding crash from accessing GlobalVars during map load)
+        _state.MapStartTime = 0;
 
         _state.RtvCooldownEndTime = null;
         _state.IsRtv = false;
@@ -169,7 +169,9 @@ public sealed class MapChooser : BasePlugin
         _state.MatchEnded = false;
         _state.EofVoteCompleted = false;
 
-        string workshopId = engineReady ? Core.Engine!.WorkshopId : "";
+        // Workshop ID and cooldown/cycle updates are deferred until engine is ready
+        // This prevents crashes from accessing gamerules/GlobalVars during early map load
+        string workshopId = "";
         _mapCooldown.OnMapStart(@event.MapName, workshopId);
         _cycleManager.OnMapStart(@event.MapName, workshopId);
 
@@ -295,15 +297,19 @@ public sealed class MapChooser : BasePlugin
     {
         if (!_config.EndOfMap.Enabled || _state.EofVoteHappening || _state.MapChangeScheduled || _state.WarmupRunning) return;
 
+        // Silent early exit if game is not fully initialized yet (MapStartTime is set in OnWarmupEnd/OnMatchStart)
+        // This prevents spamming logs with GameRules exceptions during early map load
+        if (_state.MapStartTime <= 0) return;
+
         int totalRoundsPlayed;
         try
         {
             if (Core.Game.MatchData.Phase == GamePhase.GAMEPHASE_HALFTIME) return;
             totalRoundsPlayed = Core.Game.MatchData.TerroristScoreTotal + Core.Game.MatchData.CTScoreTotal;
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            Core.Logger.LogWarning(ex, "GameRules not available in CheckAutomatedVote - skipping this tick");
+            // GameRules not available yet - silently skip this tick
             return;
         }
 
