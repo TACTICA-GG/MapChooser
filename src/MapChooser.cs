@@ -48,6 +48,10 @@ public sealed class MapChooser : BasePlugin
     private RemoveMapCommand _removeMapCmd = null!;
 
     private CancellationTokenSource? _checkVoteTimer;
+    private CancellationTokenSource? _emptyServerTimer;
+    private int _emptyServerSeconds = 0;
+
+    private const int EmptyServerCheckInterval = 30;
 
     public MapChooser(ISwiftlyCore core) : base(core)
     {
@@ -140,6 +144,39 @@ public sealed class MapChooser : BasePlugin
             CheckAutomatedVote();
         });
         Core.Scheduler.StopOnMapChange(_checkVoteTimer);
+
+        StartEmptyServerTimer();
+    }
+
+    private void StartEmptyServerTimer()
+    {
+        _emptyServerSeconds = 0;
+        _emptyServerTimer = Core.Scheduler.DelayAndRepeat(
+            EmptyServerCheckInterval * 1000,
+            EmptyServerCheckInterval * 1000,
+            CheckEmptyServerRotation);
+    }
+
+    private void CheckEmptyServerRotation()
+    {
+        if (!_config.EmptyServer.Enabled) return;
+
+        int realPlayers = Core.PlayerManager.GetAllPlayers().Count(p => p.IsValid && !p.IsFakeClient);
+        if (realPlayers > 0)
+        {
+            _emptyServerSeconds = 0;
+            return;
+        }
+
+        // Don't interfere with an in-progress vote or an already-scheduled change.
+        if (_state.EofVoteHappening || _state.MapChangeScheduled) return;
+
+        _emptyServerSeconds += EmptyServerCheckInterval;
+        if (_emptyServerSeconds >= _config.EmptyServer.IntervalMinutes * 60)
+        {
+            _emptyServerSeconds = 0;
+            _cycleManager.TriggerCycleChange();
+        }
     }
 
     private void OnMapLoad(IOnMapLoadEvent @event)
@@ -151,6 +188,7 @@ public sealed class MapChooser : BasePlugin
         _state.EofVoteHappening = false;
         _state.NextMap = null;
         _state.RoundsPlayed = 0;
+        _emptyServerSeconds = 0;
 
         // MapStartTime is set to 0 here; it will be updated properly in OnWarmupEnd or OnMatchStart
         // when the engine is fully initialized (avoiding crash from accessing GlobalVars during map load)

@@ -61,6 +61,10 @@
             "RemoveMapPermission": "admin.changemap",
             "CycleMenuPermission": "admin.changemap"
         },
+        "EmptyServer": {
+            "Enabled": false,
+            "IntervalMinutes": 30
+        },
         "AllowSpectatorsToVote": false,
         "SetNextMapPermission": "admin.changemap",
         "MapsVotePermission": "admin.mapsvote"

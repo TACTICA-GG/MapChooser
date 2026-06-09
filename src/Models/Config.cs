@@ -55,6 +55,12 @@ public class CycleConfig
     public string CycleMenuPermission { get; set; } = "admin.changemap";
 }
 
+public class EmptyServerConfig
+{
+    public bool Enabled { get; set; } = false;
+    public int IntervalMinutes { get; set; } = 30;
+}
+
 public class CommandsConfig
 {
     public string Rtv { get; set; } = "rtv";
@@ -81,6 +87,7 @@ public class MapChooserConfig
     public EndOfMapConfig EndOfMap { get; set; } = new();
     public ExtendMapConfig ExtendMap { get; set; } = new();
     public CycleConfig Cycle { get; set; } = new();
+    public EmptyServerConfig EmptyServer { get; set; } = new();
     public int MapsInCooldown { get; set; } = 3;
     public CommandsConfig Commands { get; set; } = new();
     public bool AllowSpectatorsToVote { get; set; } = false;
