@@ -12,12 +12,14 @@ public class AdminMapsVoteMenu
 {
     private readonly ISwiftlyCore _core;
     private readonly MapLister _mapLister;
+    private readonly ThemedMenu _themed;
     private readonly HashSet<string> _selectedMaps = new();
 
     public AdminMapsVoteMenu(ISwiftlyCore core, MapLister mapLister)
     {
         _core = core;
         _mapLister = mapLister;
+        _themed = new ThemedMenu(core);
     }
 
     public void Show(IPlayer player, Action<IPlayer, List<string>> onStartVote)
@@ -30,16 +32,15 @@ public class AdminMapsVoteMenu
         }
 
         var localizer = _core.Translation.GetPlayerLocalizer(player);
-        var builder = _core.MenusAPI.CreateBuilder();
-        
+
         string title = "Select Maps for Vote:";
         try { title = localizer["map_chooser.admin_vote.title"]; } catch { }
-        builder.Design.SetMenuTitle($"{title} ({_selectedMaps.Count})");
+        var builder = _themed.CreateBuilder($"{title} ({_selectedMaps.Count})");
 
         // Start Vote Option
         string startText = "START VOTE";
         try { startText = localizer["map_chooser.admin_vote.start"]; } catch { }
-        var startOption = new ButtonMenuOption($"<font color='orange'>{startText}</font>");
+        var startOption = _themed.SelectableOption($"<font color='orange'>{startText}</font>");
         startOption.Enabled = _selectedMaps.Count > 0;
         startOption.Click += (sender, args) =>
         {
@@ -61,7 +62,7 @@ public class AdminMapsVoteMenu
         foreach (var map in _mapLister.Maps)
         {
             bool isSelected = _selectedMaps.Contains(map.Name);
-            var option = new ButtonMenuOption($"{(isSelected ? "<font color='green'>[X]</font> " : "<font color='red'>[ ]</font> ")}{map.Name}");
+            var option = _themed.SelectableOption($"{(isSelected ? "<font color='green'>[X]</font> " : "<font color='red'>[ ]</font> ")}{map.Name}");
             option.Click += (sender, args) =>
             {
                 if (isSelected)

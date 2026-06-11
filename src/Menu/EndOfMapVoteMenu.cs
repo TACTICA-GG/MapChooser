@@ -13,18 +13,19 @@ public class EndOfMapVoteMenu
 {
     private readonly ISwiftlyCore _core;
     private readonly MapCooldown _mapCooldown;
+    private readonly ThemedMenu _themed;
 
     public EndOfMapVoteMenu(ISwiftlyCore core, MapCooldown mapCooldown)
     {
         _core = core;
         _mapCooldown = mapCooldown;
+        _themed = new ThemedMenu(core);
     }
 
     public IMenuAPI Show(IPlayer player, List<string> mapsInVote, Action<IPlayer, string> onVote)
     {
         var localizer = _core.Translation.GetPlayerLocalizer(player);
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.vote.title"] ?? "Vote for the next map:");
+        var builder = _themed.CreateBuilder(localizer["map_chooser.vote.title"] ?? "Vote for the next map:");
         foreach (var map in mapsInVote)
         {
             string displayName = map;
@@ -34,7 +35,7 @@ public class EndOfMapVoteMenu
                 displayName = localizer["map_chooser.extend_option"];
             }
 
-            var option = new ButtonMenuOption($"{(isExtend ? "<font color='orange'>" : "<font color='lightgreen'>")}{displayName}</font>");
+            var option = _themed.SelectableOption($"{(isExtend ? "<font color='orange'>" : "<font color='lightgreen'>")}{displayName}</font>");
             option.Enabled = isExtend || !_mapCooldown.IsMapInCooldown(map);
             option.Click += (sender, args) =>
             {

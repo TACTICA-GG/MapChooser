@@ -13,12 +13,14 @@ public class NominateMenu
     private readonly ISwiftlyCore _core;
     private readonly MapLister _mapLister;
     private readonly MapCooldown _mapCooldown;
+    private readonly ThemedMenu _themed;
 
     public NominateMenu(ISwiftlyCore core, MapLister mapLister, MapCooldown mapCooldown)
     {
         _core = core;
         _mapLister = mapLister;
         _mapCooldown = mapCooldown;
+        _themed = new ThemedMenu(core);
     }
 
     public void Show(IPlayer player, Action<IPlayer, string> onNominate)
@@ -26,8 +28,7 @@ public class NominateMenu
         var localizer = _core.Translation.GetPlayerLocalizer(player);
         var currentMapId = _core.Engine.GlobalVars.MapName.ToString();
         var currentWorkshopId = _core.Engine.WorkshopId;
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.nominate.title"] ?? "Nominate a map:");
+        var builder = _themed.CreateBuilder(localizer["map_chooser.nominate.title"] ?? "Nominate a map:");
         var playerCount = _core.PlayerManager.GetAllPlayers()
             .Count(p => p.IsValid && !p.IsFakeClient);
         foreach (var map in _mapLister.Maps)
@@ -36,7 +37,7 @@ public class NominateMenu
             if (_mapCooldown.IsMapInCooldown(map)) continue;
             if (!map.IsValidForPlayerCount(playerCount)) continue;
 
-            var option = new ButtonMenuOption($"<font color='lightgreen'>{map.Name}</font>");
+            var option = _themed.SelectableOption($"<font color='lightgreen'>{map.Name}</font>");
             option.Click += (sender, args) =>
             {
                 _core.Scheduler.NextTick(() => {

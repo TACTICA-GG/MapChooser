@@ -13,20 +13,21 @@ public class VotemapMenu
     private readonly ISwiftlyCore _core;
     private readonly MapLister _mapLister;
     private readonly MapCooldown _mapCooldown;
+    private readonly ThemedMenu _themed;
 
     public VotemapMenu(ISwiftlyCore core, MapLister mapLister, MapCooldown mapCooldown)
     {
         _core = core;
         _mapLister = mapLister;
         _mapCooldown = mapCooldown;
+        _themed = new ThemedMenu(core);
     }
 
     public void Show(IPlayer player, Action<IPlayer, string> onVote)
     {
         var localizer = _core.Translation.GetPlayerLocalizer(player);
         var currentMapName = _core.ConVar.FindAsString("mapname")?.ValueAsString;
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.votemap.title"] ?? "Vote for the next map:");
+        var builder = _themed.CreateBuilder(localizer["map_chooser.votemap.title"] ?? "Vote for the next map:");
         var playerCount = _core.PlayerManager.GetAllPlayers()
             .Count(p => p.IsValid && !p.IsFakeClient);
         foreach (var map in _mapLister.Maps)
@@ -35,7 +36,7 @@ public class VotemapMenu
             if (_mapCooldown.IsMapInCooldown(map)) continue;
             if (!map.IsValidForPlayerCount(playerCount)) continue;
 
-            var option = new ButtonMenuOption($"<font color='lightgreen'>{map.Name}</font>");
+            var option = _themed.SelectableOption($"<font color='lightgreen'>{map.Name}</font>");
             option.Click += (sender, args) =>
             {
                 _core.Scheduler.NextTick(() => {

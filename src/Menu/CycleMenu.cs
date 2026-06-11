@@ -12,6 +12,7 @@ public class CycleMenu
     private readonly MapLister _mapLister;
     private readonly MapCycleManager _cycleManager;
     private readonly MapChooserConfig _config;
+    private readonly ThemedMenu _themed;
 
     public CycleMenu(ISwiftlyCore core, MapLister mapLister, MapCycleManager cycleManager, MapChooserConfig config)
     {
@@ -19,6 +20,7 @@ public class CycleMenu
         _mapLister = mapLister;
         _cycleManager = cycleManager;
         _config = config;
+        _themed = new ThemedMenu(core);
     }
 
     public void Show(IPlayer player)
@@ -33,8 +35,7 @@ public class CycleMenu
             ? "map_chooser.cycle.mode_random"
             : "map_chooser.cycle.mode_sequential";
 
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.cycle.menu_title"] + " — " + localizer[modeKey]);
+        var builder = _themed.CreateBuilder(localizer["map_chooser.cycle.menu_title"] + " — " + localizer[modeKey]);
 
         if (maps.Count == 0)
         {
@@ -59,7 +60,7 @@ public class CycleMenu
                 else label = $"<font color='white'>{label}</font>";
 
                 var mapCapture = map;
-                var option = new ButtonMenuOption(label);
+                var option = _themed.SelectableOption(label);
                 option.Click += (sender, args) =>
                 {
                     _core.Scheduler.NextTick(() =>
@@ -85,12 +86,11 @@ public class CycleMenu
         var maps = _mapLister.Maps;
         int idx = maps.ToList().FindIndex(m => m.Name.Equals(map.Name, StringComparison.OrdinalIgnoreCase));
 
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.cycle.actions_title", map.Name]);
+        var builder = _themed.CreateBuilder(localizer["map_chooser.cycle.actions_title", map.Name]);
 
         if (idx > 0)
         {
-            var upOption = new ButtonMenuOption($"<font color='lightblue'>{localizer["map_chooser.cycle.action_move_up"]}</font>");
+            var upOption = _themed.SelectableOption($"<font color='lightblue'>{localizer["map_chooser.cycle.action_move_up"]}</font>");
             upOption.Click += (sender, args) =>
             {
                 _core.Scheduler.NextTick(() =>
@@ -108,7 +108,7 @@ public class CycleMenu
 
         if (idx >= 0 && idx < maps.Count - 1)
         {
-            var downOption = new ButtonMenuOption($"<font color='lightblue'>{localizer["map_chooser.cycle.action_move_down"]}</font>");
+            var downOption = _themed.SelectableOption($"<font color='lightblue'>{localizer["map_chooser.cycle.action_move_down"]}</font>");
             downOption.Click += (sender, args) =>
             {
                 _core.Scheduler.NextTick(() =>
@@ -124,7 +124,7 @@ public class CycleMenu
             builder.AddOption(downOption);
         }
 
-        var removeOption = new ButtonMenuOption($"<font color='red'>{localizer["map_chooser.cycle.action_remove"]}</font>");
+        var removeOption = _themed.SelectableOption($"<font color='red'>{localizer["map_chooser.cycle.action_remove"]}</font>");
         removeOption.Click += (sender, args) =>
         {
             _core.Scheduler.NextTick(() =>
@@ -138,7 +138,7 @@ public class CycleMenu
         };
         builder.AddOption(removeOption);
 
-        var backOption = new ButtonMenuOption($"<font color='grey'>{localizer["map_chooser.cycle.action_back"]}</font>");
+        var backOption = _themed.SelectableOption($"<font color='grey'>{localizer["map_chooser.cycle.action_back"]}</font>");
         backOption.Click += (sender, args) =>
         {
             _core.Scheduler.NextTick(() =>
@@ -160,10 +160,9 @@ public class CycleMenu
     {
         var localizer = _core.Translation.GetPlayerLocalizer(player);
 
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.cycle.remove_confirm_title", map.Name]);
+        var builder = _themed.CreateBuilder(localizer["map_chooser.cycle.remove_confirm_title", map.Name]);
 
-        var yesOption = new ButtonMenuOption($"<font color='red'>{localizer["map_chooser.cycle.remove_confirm_yes"]}</font>");
+        var yesOption = _themed.SelectableOption($"<font color='red'>{localizer["map_chooser.cycle.remove_confirm_yes"]}</font>");
         yesOption.Click += (sender, args) =>
         {
             _core.Scheduler.NextTick(() =>
@@ -179,7 +178,7 @@ public class CycleMenu
             return System.Threading.Tasks.ValueTask.CompletedTask;
         };
 
-        var cancelOption = new ButtonMenuOption($"<font color='lightgreen'>{localizer["map_chooser.cycle.remove_cancel"]}</font>");
+        var cancelOption = _themed.SelectableOption($"<font color='lightgreen'>{localizer["map_chooser.cycle.remove_cancel"]}</font>");
         cancelOption.Click += (sender, args) =>
         {
             _core.Scheduler.NextTick(() =>

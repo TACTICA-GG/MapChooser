@@ -10,11 +10,13 @@ public class AdminChangeMapMenu
 {
     private readonly ISwiftlyCore _core;
     private readonly MapLister _mapLister;
+    private readonly ThemedMenu _themed;
 
     public AdminChangeMapMenu(ISwiftlyCore core, MapLister mapLister)
     {
         _core = core;
         _mapLister = mapLister;
+        _themed = new ThemedMenu(core);
     }
 
     public void Show(IPlayer player, Action<IPlayer, string> onChangeMap)
@@ -22,11 +24,10 @@ public class AdminChangeMapMenu
         var localizer = _core.Translation.GetPlayerLocalizer(player);
         var currentMapId = _core.Engine.GlobalVars.MapName.ToString();
         var currentWorkshopId = _core.Engine.WorkshopId;
-        var builder = _core.MenusAPI.CreateBuilder();
-        builder.Design.SetMenuTitle(localizer["map_chooser.change_map.title"] ?? "Change map to:");
+        var builder = _themed.CreateBuilder(localizer["map_chooser.change_map.title"] ?? "Change map to:");
         foreach (var map in _mapLister.Maps)
         {
-            var option = new ButtonMenuOption($"<font color='lightgreen'>{map.Name}</font>");
+            var option = _themed.SelectableOption($"<font color='lightgreen'>{map.Name}</font>");
             option.Click += (sender, args) =>
             {
                 _core.Scheduler.NextTick(() => {
