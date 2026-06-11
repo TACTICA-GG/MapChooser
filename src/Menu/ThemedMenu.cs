@@ -11,8 +11,11 @@ namespace MapChooser.Menu;
 public class ThemedMenu
 {
     // Base URL of the SVG button icons (Pisex cs2-menus assets).
+    // jsDelivr CDN mirror of the GitHub repo: globally edge-cached with proper
+    // cache headers, so CEF downloads each icon once and reuses it instantly.
+    // (raw.githubusercontent.com has no CDN and rate-limits — much slower.)
     private const string MenuBtnUrl =
-        "https://raw.githubusercontent.com/Pisex/cs2-menus/refs/heads/main/menu_buttons/site";
+        "https://cdn.jsdelivr.net/gh/Pisex/cs2-menus@main/menu_buttons/site";
 
     // One <img> tag. Native SVG size (no width/height).
     private static string Img(string name) => $"<img src='{MenuBtnUrl}/{name}.svg'/>";
